@@ -75,23 +75,6 @@ python app.py
 
 The application will be available at `http://localhost:5000`
 
-## Default Admin Account
-- Username: Vasu
-- Password: Vasu@2219
-
-## Deployment on Railway
-
-1. Create a Railway account at [railway.app](https://railway.app)
-
-2. Connect your GitHub repository to Railway
-
-3. Configure environment variables in Railway dashboard:
-   - `SECRET_KEY`
-   - `ADMIN_KEY`
-   - Any other sensitive configuration
-
-4. Deploy using Railway's automatic deployment
-
 ## Project Structure
 
 ```
