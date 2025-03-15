@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: water-quality-monitoring
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ADMIN_KEY
+        value: Vasu@123
+    plan: free 
