@@ -35,12 +35,11 @@ THINGSPEAK_READ_API_KEY = os.getenv('THINGSPEAK_READ_API_KEY', "7K0QBM6EM1OV910C
 THINGSPEAK_URL = f"https://api.thingspeak.com/channels/{THINGSPEAK_CHANNEL_ID}/feeds/last.json"
 
 # Load ML model and scaler
-MODEL_PATH = "D:/Clean_Green/wqi_model.pkl"
-SCALER_PATH = "D:/Clean_Green/scaler.pkl"
-
 try:
-    model = joblib.load(MODEL_PATH)
-    scaler = joblib.load(SCALER_PATH)
+    model_path = os.path.join(basedir, 'models', 'wqi_model.pkl')
+    scaler_path = os.path.join(basedir, 'models', 'scaler.pkl')
+    model = joblib.load(model_path)
+    scaler = joblib.load(scaler_path)
 except Exception as e:
     print(f"Error loading model or scaler: {e}")
     model = None
