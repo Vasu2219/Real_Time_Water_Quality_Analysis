@@ -64,6 +64,7 @@ def load_user(user_id):
 
 # User model
 class User(UserMixin, db.Model):
+    __tablename__ = 'users'  # Explicitly set table name
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(120), nullable=False)
@@ -73,13 +74,14 @@ class User(UserMixin, db.Model):
         return f'<User {self.username}>'
 
 class WQIConfig(db.Model):
+    __tablename__ = 'wqi_config'  # Explicitly set table name
     id = db.Column(db.Integer, primary_key=True)
     parameter = db.Column(db.String(50), nullable=False)
     min_value = db.Column(db.Float, nullable=False)
     max_value = db.Column(db.Float, nullable=False)
     weight = db.Column(db.Float, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    updated_by = db.Column(db.Integer, db.ForeignKey('user.id'))
+    updated_by = db.Column(db.Integer, db.ForeignKey('users.id'))  # Update foreign key to match new table name
     
     def __repr__(self):
         return f'<WQIConfig {self.parameter}>'
@@ -398,16 +400,20 @@ def login():
             flash('Please provide both username and password', 'error')
             return render_template('login.html')
         
-        user = User.query.filter_by(username=username).first()
-        
-        if user and check_password_hash(user.password, password):
-            login_user(user)
-            next_page = request.args.get('next')
-            if next_page and next_page.startswith('/'):
-                return redirect(next_page)
-            return redirect(url_for('water_quality'))
-        
-        flash('Invalid username or password', 'error')
+        try:
+            user = User.query.filter_by(username=username).first()
+            
+            if user and check_password_hash(user.password, password):
+                login_user(user)
+                next_page = request.args.get('next')
+                if next_page and next_page.startswith('/'):
+                    return redirect(next_page)
+                return redirect(url_for('water_quality'))
+            
+            flash('Invalid username or password', 'error')
+        except Exception as e:
+            print(f"Login error: {str(e)}")
+            flash('An error occurred during login. Please try again.', 'error')
     
     return render_template('login.html')
 
@@ -486,16 +492,17 @@ def init_db():
             if not os.path.exists(db_dir):
                 os.makedirs(db_dir)
             
-            # Create all tables
+            # Drop all tables and recreate them
+            db.drop_all()
             db.create_all()
             
-            # Create default admin user if not exists
-            admin = User.query.filter_by(username='Vasu').first()
-            if not admin:
-                admin = User(username='Vasu', 
-                           password=generate_password_hash('Vasu@2219'), 
-                           is_admin=True)
-                db.session.add(admin)
+            # Create default admin user
+            admin = User(
+                username='Vasu',
+                password=generate_password_hash('Vasu@2219'),
+                is_admin=True
+            )
+            db.session.add(admin)
             
             # Initialize WQI configurations
             init_default_config()
@@ -506,7 +513,10 @@ def init_db():
         print(f"Error initializing database: {e}")
         raise
 
-if __name__ == '__main__':
+# Initialize database at startup
+with app.app_context():
     init_db()
+
+if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
