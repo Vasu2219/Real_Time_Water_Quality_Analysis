@@ -9,4 +9,10 @@ services:
         generateValue: true
       - key: ADMIN_KEY
         value: Vasu@123
+      - key: THINGSPEAK_CHANNEL_ID
+        value: "2845308"
+      - key: THINGSPEAK_READ_API_KEY
+        value: "7K0QBM6EM1OV910C"
+      - key: FLASK_ENV
+        value: production
     plan: free 

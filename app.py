@@ -25,13 +25,13 @@ app.secret_key = os.getenv('SECRET_KEY', 'your_secret_key')
 
 # Database configuration
 basedir = os.path.abspath(os.path.dirname(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'users.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///' + os.path.join(basedir, 'users.db'))
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['ADMIN_KEY'] = 'Vasu@123'
+app.config['ADMIN_KEY'] = os.getenv('ADMIN_KEY', 'Vasu@123')
 
 # ThingSpeak configuration
-THINGSPEAK_CHANNEL_ID = "2845308"  # Replace with your channel ID
-THINGSPEAK_READ_API_KEY = "7K0QBM6EM1OV910C"    # Replace with your API key
+THINGSPEAK_CHANNEL_ID = os.getenv('THINGSPEAK_CHANNEL_ID', "2845308")
+THINGSPEAK_READ_API_KEY = os.getenv('THINGSPEAK_READ_API_KEY', "7K0QBM6EM1OV910C")
 THINGSPEAK_URL = f"https://api.thingspeak.com/channels/{THINGSPEAK_CHANNEL_ID}/feeds/last.json"
 
 # Load ML model and scaler
