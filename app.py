@@ -25,7 +25,11 @@ app.secret_key = os.getenv('SECRET_KEY', 'your_secret_key')
 
 # Database configuration
 basedir = os.path.abspath(os.path.dirname(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///' + os.path.join(basedir, 'users.db'))
+database_url = os.getenv('DATABASE_URL', 'sqlite:///' + os.path.join(basedir, 'users.db'))
+# Handle SQLite URL for compatibility
+if database_url.startswith("sqlite://"):
+    database_url = database_url.replace("sqlite://", "sqlite:///", 1)
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['ADMIN_KEY'] = os.getenv('ADMIN_KEY', 'Vasu@123')
 
@@ -475,31 +479,32 @@ def delete_user(user_id):
         return jsonify({'success': False, 'message': str(e)})
 
 def init_db():
-    with app.app_context():
-        db.create_all()
-        
-        # Create default admin user if not exists
-        admin = User.query.filter_by(username='Vasu').first()
-        if not admin:
-            admin = User(username='Vasu', password=generate_password_hash('Vasu@2219'), is_admin=True)
-            db.session.add(admin)
-        
-        # Create default WQI configurations if not exist
-        default_configs = [
-            {'parameter': 'pH', 'min_value': 6.5, 'max_value': 8.5, 'weight': 0.2},
-            {'parameter': 'DO', 'min_value': 4.0, 'max_value': 8.0, 'weight': 0.2},
-            {'parameter': 'BOD', 'min_value': 0.0, 'max_value': 6.0, 'weight': 0.2},
-            {'parameter': 'Temperature', 'min_value': 20.0, 'max_value': 30.0, 'weight': 0.1},
-            {'parameter': 'Turbidity', 'min_value': 0.0, 'max_value': 5.0, 'weight': 0.15},
-            {'parameter': 'TDS', 'min_value': 0.0, 'max_value': 1000.0, 'weight': 0.15}
-        ]
-        
-        for config in default_configs:
-            if not WQIConfig.query.filter_by(parameter=config['parameter']).first():
-                new_config = WQIConfig(**config)
-                db.session.add(new_config)
-        
-        db.session.commit()
+    try:
+        with app.app_context():
+            # Create database directory if it doesn't exist
+            db_dir = os.path.dirname(os.path.join(basedir, 'users.db'))
+            if not os.path.exists(db_dir):
+                os.makedirs(db_dir)
+            
+            # Create all tables
+            db.create_all()
+            
+            # Create default admin user if not exists
+            admin = User.query.filter_by(username='Vasu').first()
+            if not admin:
+                admin = User(username='Vasu', 
+                           password=generate_password_hash('Vasu@2219'), 
+                           is_admin=True)
+                db.session.add(admin)
+            
+            # Initialize WQI configurations
+            init_default_config()
+            
+            db.session.commit()
+            print("Database initialized successfully!")
+    except Exception as e:
+        print(f"Error initializing database: {e}")
+        raise
 
 if __name__ == '__main__':
     init_db()
