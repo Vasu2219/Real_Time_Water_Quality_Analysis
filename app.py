@@ -40,8 +40,8 @@ THINGSPEAK_URL = f"https://api.thingspeak.com/channels/{THINGSPEAK_CHANNEL_ID}/f
 
 # Load ML model and scaler
 try:
-    model_path = os.path.join(basedir, 'models', 'wqi_custom_model1.pkl')
-    scaler_path = os.path.join(basedir, 'models', 'wqi_custom_scaler1.pkl')
+    model_path = os.path.join(basedir, 'models', 'wqi_model.pkl')
+    scaler_path = os.path.join(basedir, 'models', 'scaler.pkl')
     model = joblib.load(model_path)
     scaler = joblib.load(scaler_path)
 except Exception as e:
